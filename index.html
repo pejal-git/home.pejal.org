@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- SEO Title -->
+    <title>Faizal Refendi - Browser-Based Interactive Linux Terminal</title>
+
+	<!-- Meta Description -->
+	<meta name="description" content="Explore Faizal Refendi's interactive browser terminal. Practice Linux-like commands, run scripts, and experience a web-based terminal simulation.">
+
+	<!-- Favicon & Apple Touch Icon -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/images/ico/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="/images/ico/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/images/ico/favicon.svg" />
+    <link rel="shortcut icon" href="/images/ico/favicon.ico" />
+    <meta name="apple-mobile-web-app-title" content="pejal.org" />
+    <link rel="manifest" href="/images/ico/site.webmanifest">
+
+	<!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+	<!-- Stylesheet -->
+    <link rel="stylesheet" href="/css/styles.css">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Faizal Refendi - Browser-Based Interactive Linux Terminal">
+    <meta property="og:description" content="Explore Faizal Refendi's interactive browser terminal. Practice Linux-like commands, run scripts, and experience a web-based terminal simulation.">
+    <meta property="og:url" content="https://pejal.org">
+    <meta property="og:type" content="website">
+
+	<!-- Structured Data -->
+	<script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Faizal Refendi Terminal",
+      "url": "https://pejal.org",
+      "description": "Explore Faizal Refendi's interactive browser terminal. Practice Linux-like commands, run scripts, and experience a web-based terminal simulation.",
+      "applicationCategory": "Educational"
+    }
+    </script>
+</head>
+<body>
+    <div class="flex-container">
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <div class="terminal-button close"></div>
+                <div class="terminal-button minimize"></div>
+                <div class="terminal-button maximize"></div>
+            </div>
+            <div class="terminal-title">pejal.org terminal</div>
+        </div>
+        <div class="terminal-body" id="terminal-output">
+            <div class="system-info">
+                Linux pejal.org 5.15.0-144-generic #157-Ubuntu SMP Mon Jun 16 07:33:10 UTC 2025 x86_64 GNU/Linux
+            </div>
+            <div class="divider"></div>
+            
+            <div class="welcome">
+                Welcome to Faizal Refendi's website terminal interface
+            </div>
+            <div class="welcome">
+                Type <span class="command">help</span> to see available commands
+            </div>
+            <div class="divider-mid"></div>
+            
+            <div class="quote">
+                "Amid struggles, pause. Savor the little things - they soften the edges of hardship and keep hope alive."
+                <div class="quote-author">- Faizal Refendi</div>
+            </div>
+            <div class="divider"></div>
+            
+            <div class="input-line">
+                <span class="prompt">guest@terminal:~$</span>
+                <input type="text" class="command-input" id="command-input" autofocus>
+            </div>
+        </div>
+    </div>
+    <div class="footer-container">
+        <div class="footer">
+            <p>© 2025 Faizal Refendi. All rights reserved.</p>
+        </div>
+    </div>
+</div>
+</body>
+<script type="module" src="/js/main.js"></script>
+</html>

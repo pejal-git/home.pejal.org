@@ -1,0 +1,555 @@
+import { asciiImg } from './asciiImg.js';
+import { quotes } from './quotes.js';
+import { commandsMap } from './commands/index.js';
+import { createOutput } from './utils.js';
+
+// Wait for DOM to be fully loaded before executing
+document.addEventListener('DOMContentLoaded', function() {
+    // Get DOM elements with null checks
+    const terminalOutput = document.getElementById('terminal-output');
+    const commandInput = document.getElementById('command-input');
+
+    // Verify critical elements exist
+    if (!terminalOutput || !commandInput) {
+        console.error('Error: Required terminal elements not found');
+        return;
+    }
+
+    // Constants
+    const MAX_HISTORY = 50;
+    const MAX_COMMAND_LENGTH = 100;
+    const COMMAND_PREFIX = 'root@pejal.org:~$ ';
+
+    // State
+    let commandHistory = [];
+    let historyIndex = -1;
+
+    // Initialize terminal
+    function init() {
+        commandInput.focus();
+        
+        // Add initial system message
+        setTimeout(() => {
+            const initMsg = document.createElement('div');
+            initMsg.className = 'system-info';
+            initMsg.textContent = 'System ready. Terminal session initialized.';
+            
+            // Safe insertion
+            if (terminalOutput.children.length > 3) {
+                terminalOutput.insertBefore(initMsg, terminalOutput.children[3]);
+            } else {
+                terminalOutput.insertBefore(initMsg, terminalOutput.lastElementChild);
+            }
+            
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }, 1000);
+    }
+
+    // Helper function to create output elements safely
+    function createOutput(content, className = 'output-content') {
+        const element = document.createElement('div');
+        element.className = className;
+        element.textContent = content;
+        return element;
+    }
+
+    // Display command with prompt
+    function displayCommand(command) {
+        const commandLine = document.createElement('div');
+        commandLine.className = 'command-line';
+        
+        const promptSpan = document.createElement('span');
+        promptSpan.className = 'prompt';
+        promptSpan.textContent = COMMAND_PREFIX;
+        
+        const commandSpan = document.createElement('span');
+        commandSpan.className = 'command';
+        commandSpan.textContent = command;
+        
+        commandLine.appendChild(promptSpan);
+        commandLine.appendChild(commandSpan);
+        terminalOutput.insertBefore(commandLine, terminalOutput.lastElementChild);
+        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+    }
+
+    // Process commands
+    function processCommand(command) {
+        const output = document.createElement('div');
+        output.className = 'output';
+        const response = document.createElement('div');
+        response.className = 'command-response';
+
+        try {
+            switch(command.toLowerCase()) {
+		case 'ascii':
+		    // Show ascii img
+		   	const asciiDiv = document.createElement('div');
+		   	asciiDiv.className = 'ascii-art';
+			asciiDiv.style.whiteSpace = 'pre';
+			asciiDiv.fontFamily = 'monospace';
+			asciiDiv.textContent = asciiImg;
+			response.appendChild(asciiDiv);
+			break;
+                case 'help':
+                    // Help command
+                    response.appendChild(createOutput('Available commands:'));
+                    
+                    const helpList = document.createElement('ul');
+                    helpList.className = 'help-list';
+                    
+                    [
+                        {cmd: 'help', desc: 'Show available commands'},
+                        {cmd: 'about', desc: 'Information about Faizal'},
+                        {cmd: 'skill', desc: 'Show my technical skills'},
+                        {cmd: 'contact', desc: 'Show contact information'},
+                        {cmd: 'project', desc: 'Show personal projects'},
+                        {cmd: 'quote', desc: 'Display a random inspirational quote'},
+                        {cmd: 'ascii', desc: 'View developer image in ascii'},
+                        {cmd: 'privacy', desc: 'Website privacy information'},
+                        {cmd: 'clear', desc: 'Clear the terminal screen'}
+                    ].forEach(item => {
+                        const li = document.createElement('li');
+                        const cmdSpan = document.createElement('span');
+                        cmdSpan.className = 'command';
+                        cmdSpan.textContent = item.cmd;
+                        li.appendChild(cmdSpan);
+                        li.appendChild(document.createTextNode(` - ${item.desc}`));
+                        helpList.appendChild(li);
+                    });
+                    
+                    response.appendChild(helpList);
+                    response.appendChild(createOutput('Tip 1: Some Linux-like commands enabled here ;)'));
+                    response.appendChild(createOutput('Tip 2: Use ↑/↓ arrow keys to navigate command history'));
+                    break;
+                case 'skill':
+                case 'skills':
+                    response.appendChild(createOutput('Technical Skills:'));
+                    
+                    const skillList = document.createElement('ul');
+                    skillList.className = 'privacy-list';
+                    
+                    [
+                        'Hardware & Network troubleshooting',
+                        'CI/CD (Jenkins, Fastlane, Firebase)',
+                        'Game Engine (Unity, Unreal, Game Maker)',
+                        'Modelling (Maya, Blender)',
+                        'Microsoft Office (Word, Excel, Powerpoint)',
+                        'Google Workspace (Docs, Sheets, Slides)',
+                        'Adobe Creative Suit (Ps, Ai, Ae, Pr)',
+                        'Scripting fundamental (bash, groovy)',
+                        'Languages (C#,C++,JAVA,SQL,PHP,HTML5,CSS,JS)',
+                        'Operating Systems (Windows, Linux, Mac)'
+                    ].forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item;
+                        skillList.appendChild(li);
+                    });
+                    
+                    response.appendChild(skillList);
+                    break;
+                case 'about':
+                    // About command
+                    const aboutContent = document.createElement('div');
+                    aboutContent.className = 'about-content';
+                    
+                    [
+                        {text: 'Faizal Refendi - Developer/DevOps by day, fisherman/survivalist by heart. 🖥️🎣🦪', class: ''},
+                        {text: 'Philosophy: "Enjoy even the slightest things in life."', class: 'highlight'},
+                        {text: 'I work as a developer and devops engineer, but my true escape is fishing and challenging outdoor activities. Balancing bugs in code with the thrill of survival keeps life interesting!', class: ''},
+                        {text: 'Professionally, I\'m passionate about technology and creating meaningful digital experiences. My passion is my drive and I\'m very persistent.', class: 'highlight'},
+                        {text: 'Personally, I value connections, growth, and making a positive impact.', class: ''}
+                    ].forEach(line => {
+                        const div = document.createElement('div');
+                        div.className = `output-content ${line.class}`;
+                        div.textContent = line.text;
+                        aboutContent.appendChild(div);
+                    });
+                    
+                    response.appendChild(aboutContent);
+                    break;
+                case 'projects':
+                case 'project':
+                    // Project command
+                    const projectContent = document.createElement('div');
+                    projectContent.className = 'contact-info';
+                    response.appendChild(createOutput('Ongoing Projects:'));
+                    [
+                        {label: 'Pejal Website:', text: 'https://pejal.org', url: 'https://pejal.org'},
+                        {label: 'HLC-Terminal:', text: 'https://pejal.org/hlc-terminal', url: 'https://pejal.org/hlc-terminal'},
+                        {label: 'Admin Panel:', text: 'https://pejal.org/login', url: 'https://pejal.org/login'}
+                    ].forEach(project => {
+                        const div = document.createElement('div');
+                        div.className = 'output-content';
+
+                        const link = document.createElement('a');
+                        link.href = project.url;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        link.style.textDecoration = 'none';
+                        link.style.color = 'inherit';
+
+                        const labelSpan = document.createElement('span');
+                        labelSpan.className = 'command';
+                        labelSpan.textContent = project.label;
+                        link.appendChild(labelSpan);
+                        link.appendChild(document.createTextNode(' ' + project.text));
+
+                        div.appendChild(link);
+                        projectContent.appendChild(div);
+                    });
+
+                    response.appendChild(projectContent);
+                    response.appendChild(createOutput('Feel free to check them out and return a feedback!', 'success'));
+                    break;
+
+                case 'contact':
+                    // Contact command
+                    const contactContent = document.createElement('div');
+                    contactContent.className = 'contact-info';
+
+                    [
+                        {icon: 'fas fa-envelope', label: 'Email:', text: 'developer@pejal.org', url: 'mailto:developer@pejal.org'},
+                        {icon: 'fab fa-telegram', label: 'Telegram:', text: 't.me/m30w1337', url: 'https://t.me/m30w1337'},
+                        {icon: 'fab fa-linkedin', label: 'Linked-In', text: 'in/faizal-refendi', url: 'https://linkedin.com/in/faizal-refendi'},
+                        {icon: 'fab fa-facebook', label: 'Facebook:', text: 'fb.com/static4life', url: 'https://facebook.com/static4life'},
+                        {icon: 'fab fa-square-instagram', label: 'Instagram:', text: 'ig.me/1337m03w', url: 'https://instagram.com/1337m03w'},
+                        {icon: 'fas fa-globe', label: 'Website:', text: 'sites.google.com/view/faizalrefendi', url: 'https://sites.google.com/view/faizalrefendi'}
+                    ].forEach(contact => {
+                        const div = document.createElement('div');
+                        div.className = 'output-content';
+
+                        const link = document.createElement('a');
+                        link.href = contact.url;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        link.style.textDecoration = 'none';
+                        link.style.color = 'inherit';
+
+                        const icon = document.createElement('i');
+                        icon.className = contact.icon;
+                        icon.style.width = '20px';
+                        link.appendChild(icon);
+                        link.appendChild(document.createTextNode(' '));
+
+                        const labelSpan = document.createElement('span');
+                        labelSpan.className = 'command';
+                        labelSpan.textContent = contact.label;
+                        link.appendChild(labelSpan);
+                        link.appendChild(document.createTextNode(' ' + contact.text));
+
+                        div.appendChild(link);
+                        contactContent.appendChild(div);
+                    });
+
+                    response.appendChild(contactContent);
+                    response.appendChild(createOutput('Feel free to reach out or just to say hello world!', 'success'));
+                    break;
+
+                case 'quote':
+                    // Quote command
+                    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                    const [quoteText, quoteAuthor] = randomQuote.split(' - ');
+                    
+                    const quoteDiv = document.createElement('div');
+                    quoteDiv.className = 'quote';
+                    quoteDiv.appendChild(createOutput(`"${quoteText}"`));
+                    
+                    const authorDiv = document.createElement('div');
+                    authorDiv.className = 'quote-author';
+                    authorDiv.textContent = `- ${quoteAuthor}`;
+                    quoteDiv.appendChild(authorDiv);
+                    
+                    response.appendChild(quoteDiv);
+                    response.appendChild(createOutput('Type quote again for another quote'));
+                    break;
+
+                case 'privacy':
+                    // Privacy command
+                    response.appendChild(createOutput('Privacy Information:'));
+                    
+                    const privacyList = document.createElement('ul');
+                    privacyList.className = 'privacy-list';
+                    
+                    [
+                        'No personally identifiable information is gathered',
+                        'No cookies are used for monitoring',
+                        'All terminal interactions happen in your browser',
+                        'This site contains links, this privacy policy only applies here.'
+                    ].forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item;
+                        privacyList.appendChild(li);
+                    });
+                    
+                    response.appendChild(privacyList);
+                    break;
+
+                case 'clear':
+                    // Clear command
+                    while (terminalOutput.children.length > 1) {
+                        terminalOutput.removeChild(terminalOutput.firstChild);
+                    }
+                    return;
+
+                //fun commands
+                case 'whoami':
+                    response.appendChild(createOutput('root'));
+                    break;
+                case 'id':
+                    response.appendChild(createOutput('uid=0(root) gid=0(root) groups=0(root)'));
+                    break;
+                case 'uname -a':
+                    response.appendChild(createOutput('Linux pejal.org 5.15.0-144-generic #157-Ubuntu SMP Mon Jun 16 07:33:10 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux'));
+                    break;
+                case 'hostname':
+                    response.appendChild(createOutput('pejal.org'));
+                    break;
+                case 'pwd':
+                    response.appendChild(createOutput('/root'));
+                    break;
+                case 'netstat':
+                case 'netstat -a':
+                case 'netstat -tulnp':
+                    response.appendChild(createOutput('netstat full feature DISABLED. Displaying limited info:', 'error'));
+                    response.appendChild(createOutput('(Not all owned process info will be shown, you need to enable full feature.)'));
+                    response.appendChild(createOutput('Active Internet connections (only servers)'));
+                    response.appendChild(createOutput('Proto Recv-Q Send-Q Local Address        Foreign Address        State'));
+                    response.appendChild(createOutput('tcp        0      0 *:443                *:*                    LISTEN'));
+                    response.appendChild(createOutput('tcp        0      0 *:80                 *:*                    LISTEN'));
+                    response.appendChild(createOutput('udp        0      0 *:443                *:*                    LISTEN'));
+                    break;
+                case 'ip a':
+                case 'ip':
+                    response.appendChild(createOutput('ip full feature DISABLED. Displaying limited info:', 'error'));
+                    response.appendChild(createOutput('1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000'));
+                    response.appendChild(createOutput('    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00'));
+                    response.appendChild(createOutput('    inet 127.0.0.1/8 scope host lo'));
+                    response.appendChild(createOutput('       valid_lft forever preferred_lft forever'));
+                    response.appendChild(createOutput('2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000'));
+                    response.appendChild(createOutput('    link/ether 00:16:3e:cb:7a:5d brd ff:ff:ff:ff:ff:ff link-netnsid 0'));
+                    response.appendChild(createOutput('    inet 102.211.234.190/25 brd 102.211.234.255 scope global eth0'));
+                    response.appendChild(createOutput('       valid_lft forever preferred_lft forever'));
+                    break;
+                case 'ls':
+                    if (!command.trim() || command.trim() === 'ls') {
+                        response.appendChild(createOutput(' '));
+                        break;
+                    }
+                    // Fall through to path checks
+
+                case (command.match(/^ls\s+(\/|\.\.|\~|-[a-zA-Z]*\s*\/)/)?.input):
+                    const path = command.split(' ')[1] || '/';
+                    const RESTRICTED_PATHS = [
+                        '/etc', '/etc/', '/etc/*',
+                        '/root', '/root/', '/root/*',
+                        '/home', '/home/', '/home/*',
+                        '/bin', '/sbin', '/usr/bin', '/usr/sbin',
+                        '/dev', '/proc', '/sys',
+                        '/boot', '/lib', '/lib64', '/opt',
+                        '/mnt', '/media', '/srv',
+                    ];
+
+                    if (path === '..') {
+                        response.appendChild(createOutput('ls: cannot open directory \'..\': Permission denied', 'error'));
+                    } 
+                    else if (path === '~') {
+                        response.appendChild(createOutput(' '));
+                    }
+                    else if (RESTRICTED_PATHS.some(restricted => 
+                        path.startsWith(restricted.replace('*', '')) ||
+                        restricted.startsWith(path.replace('*', ''))
+                    )) {
+                        response.appendChild(createOutput(`ls: cannot open directory '${path}': Permission denied`, 'error'));
+                        response.appendChild(createOutput('ALERT: Unauthorized access attempt logged', 'error'));
+                    }
+                    else {
+                        // Non-sensitive path handling
+                        const normalizedPath = path.endsWith('/') ? path.slice(0, -1) : path;
+                        
+                        switch(normalizedPath) {
+                            case '/tmp':
+                                response.appendChild(createOutput('systemd-private-64607d14a6e544478bd71ba42ad87c6f-systemd-timesyncd.service-baztDd'));
+                                response.appendChild(createOutput('systemd-private-64607d14a6e544478bd71ba42ad87c6f-systemd-logind.service-g5I6dP'));
+                                response.appendChild(createOutput('systemd-private-64607d14a6e544478bd71ba42ad87c6f-systemd-resolved.service-oElB80'));
+                                break;
+
+                            case '/var':
+                                response.appendChild(createOutput('backups  cache  lib  local  lock  log  mail  opt  run  spool  tmp  www'));
+                                break;
+                                
+                            case '/var/www':
+                                response.appendChild(createOutput('html'));
+                                break;
+                                
+                            case '/var/www/html':
+                                response.appendChild(createOutput('css  index.html  js  robots.txt  security.txt'));
+                                break;
+                            case '/var/www/html/css':
+                                response.appendChild(createOutput('styles.css'))
+                                break;
+                            case '/var/www/html/js':
+                                response.appendChild(createOutput('main.js'))
+                                break;
+
+                            case '/var/log':
+                                response.appendChild(createOutput('ls: cannot open directory \'/var/log\': Permission denied', 'error'));
+                                response.appendChild(createOutput('ALERT: Unauthorized access attempt logged', 'error'));
+                                break;
+                                
+                            default:
+                                // Handle all other /var subdirectories
+                                if (normalizedPath.startsWith('/var/')) {
+                                    response.appendChild(createOutput(`ls: cannot open directory '${normalizedPath}': Permission denied`, 'error'));
+                                    response.appendChild(createOutput('ALERT: Unauthorized access attempt logged', 'error'));
+                                } else {
+                                    response.appendChild(createOutput(' '));
+                                }
+                        }
+                    }
+                    break;
+                case 'ls -a':
+                    response.appendChild(createOutput('.              .bash_history  .cache   .git        .local    .ssh'));
+                    response.appendChild(createOutput('..             .bash_logout   .config  .gitconfig  .profile  .sudo_as_admin_successful'));
+                    response.appendChild(createOutput('.bash_aliases  .bashrc'));
+                    break;
+                case 'ls -l':
+                case 'ls -lh':
+                case 'ls -lt':
+                case 'ls -ltr':
+                case 'ls -s':
+                case 'ls -x':
+                case 'ls -i':
+                    response.appendChild(createOutput(' '));
+                    break;
+                case 'ls -la':
+                    response.appendChild(createOutput('-rwxr-xr-x 1 root root  208 Jul 25 03:28 .bash_aliases'));
+                    response.appendChild(createOutput('-rw------- 1 root root 9335 Aug 11 10:46 .bash_history'));
+                    response.appendChild(createOutput('-rw-r--r-- 1 root root  220 Jul 24 03:33 .bash_logout'));
+                    response.appendChild(createOutput('-rw-r--r-- 1 root root 3526 Jul 24 03:33 .bashrc'));
+                    response.appendChild(createOutput('drwx------ 1 root root   44 Aug 11 00:30 .cache'));
+                    response.appendChild(createOutput('drwxr-xr-x 1 root root  100 Aug 11 00:30 .config'));
+                    response.appendChild(createOutput('drwxr-xr-x 1 root root  136 Jul 25 03:31 .git'));
+                    response.appendChild(createOutput('-rw-r--r-- 1 root root   54 Jul 25 03:28 .gitconfig'));
+                    response.appendChild(createOutput('-rw-r--r-- 1 root root  169 Jul 25 03:28 .gitignore'));
+                    response.appendChild(createOutput('drwx------ 1 root root   20 Jul 24 03:33 .local'));
+                    response.appendChild(createOutput('-rw-r--r-- 1 root root  807 Jul 24 03:33 .profile'));
+                    response.appendChild(createOutput('drwx------ 1 root root  296 Jul 25 03:28 .ssh'));
+                    response.appendChild(createOutput('-rw-r--r-- 1 root root    0 Jul 24 03:38 .sudo_as_admin_successful'));
+                    break;
+                case 'ls .ssh/':
+                case 'ls .ssh':
+                    response.appendChild(createOutput('authorized_keys  id_ed25519  id_ed25519.pub  known_hosts'));
+                    break;
+
+                case 'ls .config':
+                    response.appendChild(createOutput('GitHub'));
+                    break;
+                case 'ls .config/github':
+                    response.appendChild(createOutput('ActionsService'));
+                    break;
+                case 'ls .config/github/actionsservice':
+                    response.appendChild(createOutput(' '));
+                    break;
+                case 'ls -r':
+                    response.appendChild(createOutput('Permission denied!', 'error'));
+                    response.appendChild(createOutput('ALERT: Unauthorized access attempt logged', 'error'));
+                    break;
+		// 🔹 Block all file reading commands
+	        case 'cat': case 'tac': case 'rev': case 'strings': case 'xxd':
+        	case 'hexdump': case 'od': case 'less': case 'more': case 'most':
+       		case 'pg': case 'head': case 'tail': case 'sed': case 'awk':
+        	case 'grep': case 'cut': case 'wc': case 'sort': case 'uniq':
+        	case 'nano': case 'vim': case 'vi': case 'emacs': case 'gedit':
+        	case 'kate': case 'code': case 'xdg-open': case 'gnome-open':
+        	case 'kde-open': case 'dd': case 'cmp': case 'file': case 'multitail':
+        	case 'python3': case 'perl': case 'ruby': case 'node': case 'php':
+        	case 'lua': case 'tclsh': case 'racket': case 'guile': case 'bash':
+        	case 'sh': case 'zsh': case 'ksh': case 'dash': case 'read':
+        	case 'echo': case 'while': case 'exec': case 'mmap': case 'open':
+        	case 'strace': case 'gdb':
+            		response.appendChild(createOutput('All file reading methods disabled', 'error'));
+            		response.appendChild(createOutput('ALERT: Unauthorized access attempt logged', 'error'));
+			break;
+
+                default:
+                    // Handle potential "hacker" commands
+                    if (command.match(/^(cd|git|sudo|rm|su|wget|chmod|echo|psql|mysql|ssh|find|lsof|ps|crontab|top|arp|route|iptables|httpd|apache2|perl|java|which|awk|env|set|history|bash|scp|sh|exec|nano|vim|cat|:\(\))/)) {
+                        response.appendChild(createOutput('Permission denied!', 'error'));
+                        response.appendChild(createOutput('ALERT: Unauthorized access attempt logged', 'error'));
+                    } else {
+                        // Unknown command
+                        const errorMsg = document.createElement('div');
+                        errorMsg.className = 'output-content error';
+                        
+                        errorMsg.appendChild(document.createTextNode('Command not found: '));
+                        
+                        const cmdSpan = document.createElement('span');
+                        cmdSpan.className = 'command';
+                        cmdSpan.textContent = command;
+                        errorMsg.appendChild(cmdSpan);
+                        
+                        response.appendChild(errorMsg);
+                        response.appendChild(createOutput('Type help to see available commands'));
+                        response.appendChild(createOutput('Pro tip: Press Up Arrow to edit your last command'));
+                    }
+            }
+
+            output.appendChild(response);
+            terminalOutput.insertBefore(output, terminalOutput.lastElementChild);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+
+        } catch (error) {
+            console.error('Error processing command:', error);
+            terminalOutput.appendChild(createOutput('Error processing command', 'error'));
+        }
+    }
+
+    // Handle command input
+    function handleKeyDown(e) {
+        if (commandHistory.length >= MAX_HISTORY) {
+            commandHistory.shift();
+        }
+
+        if (e.key === 'Enter') {
+            const command = commandInput.value.trim();
+            if (!command) return;
+
+            if (command.length > MAX_COMMAND_LENGTH) {
+                terminalOutput.appendChild(createOutput('Error: Command too long', 'error'));
+                commandInput.value = '';
+                return;
+            }
+
+            commandHistory.push(command);
+            historyIndex = commandHistory.length;
+            displayCommand(command);
+            processCommand(command);
+            commandInput.value = '';
+        } else if (e.key === 'ArrowUp') {
+            // Command history navigation
+            e.preventDefault();
+            if (commandHistory.length > 0) {
+                if (historyIndex > 0) historyIndex--;
+                commandInput.value = commandHistory[historyIndex] || '';
+            }
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (commandHistory.length > 0) {
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    commandInput.value = commandHistory[historyIndex] || '';
+                } else {
+                    historyIndex = commandHistory.length;
+                    commandInput.value = '';
+                }
+            }
+        }
+    }
+
+    // Set up event listeners
+    commandInput.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('click', () => commandInput.focus());
+
+    // Initialize the terminal
+    init();
+});
